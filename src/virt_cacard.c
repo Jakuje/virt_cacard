@@ -62,7 +62,6 @@ static gboolean action_insert = FALSE, action_remove = FALSE;
  **/
 static const char* reader_name;
 static const char hostname[] = "127.0.0.1";
-static uint16_t port = VPCDPORT;
 
 static gpointer events_thread(gpointer data)
 {
@@ -458,9 +457,9 @@ static gboolean do_socket_read(GIOChannel *source, GIOCondition condition, gpoin
     return isOk;
 }
 
-void connect_vcpd(void)
+void connect_vcpd(int slot)
 {
-    sock = connectsock(hostname,port);
+    sock = connectsock(hostname, VPCDPORT + slot);
 
     if (sock == -1){
         g_error("Error creating read watch\n");
@@ -505,7 +504,7 @@ void signal_insert(int sig)
     }
 }
 
-int virt_cacard(void)
+int virt_cacard(int slot)
 {
     VReader *r = NULL;
     VCardEmulError ret;
@@ -525,7 +524,7 @@ int virt_cacard(void)
      **************** CONNECTION TO VPCD *******************
      **/
     /* Connecting to VPCD and creating an IO channel to manage the socket */
-    connect_vcpd();
+    connect_vcpd(slot);
 
     /* Handle insert/removal signals */
     signal(SIGUSR1, signal_remove);
@@ -558,7 +557,7 @@ int virt_cacard(void)
         vreader_free(r);
 
         /* Now, reconnect to VPCD and fall back to the main loop */
-        connect_vcpd();
+        connect_vcpd(slot);
     }
 
     /**
@@ -588,9 +587,10 @@ void display_usage(void)
 {
     fprintf(stdout,
         " Usage:\n"
-        "   virt_cacard [-p pid] [-i|-r]\n"
+        "   virt_cacard [-s slot] [-p pid] [-i|-r]\n"
         "       -p pid      PID of previously started virt_cacard process.\n"
         "                   If not specified, all virt_cacard processes will be affected\n"
+        "       -s          Select reader slot id for the new token to use (0-3 for default vpcd configuration)\n"
         "       -r          Remove virtual smart card from virtual slot\n"
         "       -i          Insert virtual smart card (if it was previously removed)\n"
         "       -h          This help\n"
@@ -603,10 +603,18 @@ int main(int argc, char* argv[])
 {
     gboolean insert = FALSE, remove = FALSE;
     long pid = -1;
+    int slot = 0;
     char c;
 
-    while ((c = getopt(argc, argv, "?hp:ir")) != -1) {
+    while ((c = getopt(argc, argv, "?hp:s:ir")) != -1) {
         switch (c) {
+        case 's':
+            slot = atoi(optarg);
+            if (slot < 0 || slot >= 4) {
+                fprintf(stderr, "The slot needs to be between 0 and 3 by default");
+                return 1;
+            }
+            break;
         case 'p':
             pid = atol(optarg);
             break;
@@ -656,7 +664,7 @@ int main(int argc, char* argv[])
     }
 
     /* If no specific action was given, start virt_cacard now */
-    return virt_cacard();
+    return virt_cacard(slot);
 }
 
 /* vim: set ts=4 sw=4 tw=0 noet expandtab: */
