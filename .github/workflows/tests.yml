@@ -1,0 +1,58 @@
+name: Build & test
+
+on:
+  pull_request:
+  push:
+    branches: ["master"]
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
+jobs:
+  build:
+    name: CI with software token
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [fedora, centos10] #, debian, ubuntu
+        include:
+          - name: fedora
+            container: fedora:latest
+          #- name: ubuntu
+          #  container: ubuntu:latest
+          #- name: debian
+          #  container: debian:sid
+          - name: centos10
+            container: quay.io/centos/centos:stream10
+    container: ${{ matrix.container }}
+    steps:
+      - name: Install Dependencies
+        run: |
+            if [ "${{ matrix.name }}" = "centos10" ]; then
+              dnf_opts="--enablerepo=crb"
+            fi
+            if [ -f /etc/redhat-release ]; then
+              yes | dnf copr enable jjelen/vsmartcard
+              dnf -y install $dnf_opts \
+                git gcc pcsc-lite-devel autoconf automake libtool \
+                libcacard-devel opensc softhsm gnutls-utils nss-tools \
+                virtualsmartcard libcacard which openssl procps-ng
+            elif [ -f /etc/debian_version ]; then
+              apt-get -q update
+              apt-get -yq install git gcc build-essential \
+                softhsm2 opensc gnutls-bin libnss3-tools
+            fi
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build and install
+        run: |
+          ./autogen.sh
+          ./configure
+          make
+          make install
+
+      - name: Test
+        run: ./tests.sh
