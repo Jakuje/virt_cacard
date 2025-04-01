@@ -52,12 +52,22 @@ After that, you should be able to access virtual smart card through OpenSC:
     Slot 3 (0xc): Virtual PCD 00 03
       (empty)
 
+## Caveats
+
 If you use Fedora or RHEL, make sure to configure p11-kit to not load OpenSC
 for `virt_cacard`:
 
     # echo "disable-in: virt_cacard" >> /usr/share/p11-kit/modules/opensc.module
 
 otherwise the above command will hang (recursive access to pcscd).
+
+If you are using the `virt_cacard` for testing and you are changing content of
+the cards, make sure the OpenSC (or your favoride driver) file cache is purged
+or disabled. The virtual card has the same serial number and same ATR and
+OpenSC tries to avoid unncecessary queries to the card when the same type
+serial number is presented.
+
+## Inserting and removal events
 
 The virtual smart card is automatically started in inserted state. To simulate
 smart card removal and insertion events, you can either kill the `virt_cacard`
@@ -68,6 +78,13 @@ This can be done by running `virt_cacard` with `-r` switch to remove card and
 `virt_cacard` processes in the system. If you want to limit which process should
 be used (if there are multiple virtual smart cards or `virt_cacard` runs under
 valgrind), you can use `-p` switch to specify PID.
+
+## Using multiple cards
+
+The `virt_cacard` now supports running multiple instances and connecting to
+different virtual readers using the `-s` CLI switch. When the switch is not
+specified, it will automatically connect to the first slot (0). Setting value
+from 1 to 3 will connect cards to the specific slots.
 
 ## Debugging
 
