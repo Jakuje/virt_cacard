@@ -1,4 +1,4 @@
-EXTRA_DIST = setup-softhsm2.sh 
+EXTRA_DIST = setup-softhsm2.sh autogen.sh LICENSE README.md
 
 AM_CFLAGS = -Wall 
 AM_CFLAGS += $(GLIB_CFLAGS)		\
