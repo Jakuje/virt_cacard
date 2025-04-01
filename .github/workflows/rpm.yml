@@ -1,0 +1,48 @@
+---
+name: RPM build
+
+on:
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  rpm-build:
+    name: Try a RPM Build
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [fedora, centos10]
+        include:
+          - name: fedora
+            container: fedora:latest
+          - name: centos10
+            container: quay.io/centos/centos:stream10
+    container: ${{ matrix.container }}
+    steps:
+      - name: Install Dependencies
+        run: |
+            if [ "${{ matrix.name }}" = "centos10" ]; then
+              dnf_opts="--enablerepo=crb"
+            fi
+            yes | dnf copr enable jjelen/vsmartcard
+            dnf -y install $dnf_opts \
+              git gcc pcsc-lite-devel autoconf automake libtool \
+              libcacard-devel procps-ng rpm-build
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup
+        run: |
+          ./autogen.sh
+          ./configure
+          make dist
+
+      - name: RPM Build
+        run: |
+          mkdir -p rpmbuild/SOURCES
+          cp virt_cacard*.tar.gz rpmbuild/SOURCES/
+          rpmbuild --define "_topdir $PWD/rpmbuild" -ba \
+              packaging/virt_cacard.spec
+
