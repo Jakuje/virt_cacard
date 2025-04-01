@@ -402,7 +402,7 @@ static gboolean do_socket_read(GIOChannel *source, GIOCondition condition, gpoin
     if(wasRead == 2){
         convert_byte_hex(&rcvLength, &buffer[0], &buffer[1], BYTES2HEX);
 
-        g_debug("%s: rcvLength = = %i\n wasRead = %li\n", __func__, rcvLength, wasRead);
+        g_debug("%s: rcvLength = %i\n wasRead = %li\n", __func__, rcvLength, wasRead);
         g_io_channel_read_chars(source, (gchar *) buffer, rcvLength, &wasRead, &error);
         g_debug("%s: second part rcvLength = %i\n wasRead = %li\n", __func__, rcvLength, wasRead);
         if(wasRead == VPCD_CTRL_LEN){
