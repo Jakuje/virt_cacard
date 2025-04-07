@@ -1,0 +1,12 @@
+News and release history for virt_cacard
+
+# New in 1.3.0
+ * Add support for multiple smart cards
+
+# New in 1.2.1
+ * Bugfix release after previous
+
+# New 1.2.0
+ * New functionality to insert and remove virtual card
+ * Documentation improvements
+ * Stability and improvements
