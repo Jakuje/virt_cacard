@@ -13,7 +13,8 @@ To use virt_cacard, you need a program (such as [OpenSC](https://github.com/Open
 
 The virtual smart card, emulated with [libcacard](https://gitlab.freedesktop.org/spice/libcacard/), connects to the socket and can then get (and reply to) APDUs from the application. From the point of view of the application, the process is transparent. 
 
-OpenSC tests:                    [![virt_cacard](https://gitlab.com/PL4typus/OpenSC/badges/virt_cacard/pipeline.svg)](https://gitlab.com/PL4typus/OpenSC/pipelines) 
+* OpenSC tests: [![opensc](https://github.com/OpenSC/OpenSC/actions/workflows/linux.yml/badge.svg)](https://github.com/OpenSC/OpenSC/actions/workflows/linux.yml)
+* virt_cacard tests: [![virt_cacard](https://github.com/Jakuje/virt_cacard/actions/workflows/tests.yml/badge.svg)](https://github.com/Jakuje/virt_cacard/actions/workflows/tests.yml)
 
 ---
 ## How to build virt_cacard
